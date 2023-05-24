@@ -3,6 +3,7 @@ package okhttp;
 import com.google.gson.Gson;
 import dto.ContactDTO;
 import dto.DeleteByIdResponseDTO;
+import dto.ErrorDTO;
 import okhttp3.*;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -58,6 +59,35 @@ public class DeleteByIdOKHTTP {
         Assert.assertEquals(dto.getMessage(),"Contact was deleted!");
         System.out.println(dto.getMessage());
     }
+    @Test
+   public void deleteContactWrongToken() throws IOException {
+       Request request = new Request.Builder()
+               .url("https://contactapp-telran-backend.herokuapp.com/v1/contacts/4a7fbd67-1d50-4c40-9994-782dc8a3b9aa")
+               .delete()
+               .addHeader("Authorization","seses")
+              .build();
+       Response response = client.newCall(request).execute();
 
+       Assert.assertEquals(response.code(),401);
+        ErrorDTO dto = gson.fromJson(response.body().string(),ErrorDTO.class);
+
+        Assert.assertEquals(dto.getError(),"Unauthorized");
+
+}
+    @Test
+    public void deleteContactNotFound() throws IOException {
+        Request request = new Request.Builder()
+                .url("https://contactapp-telran-backend.herokuapp.com/v1/contacts/4a7fbd7-1d50-4c4-9994-782dc8a3b9aa")
+                .delete()
+                .addHeader("Authorization",token)
+                .build();
+        Response response = client.newCall(request).execute();
+
+        Assert.assertEquals(response.code(),400);
+        ErrorDTO dto = gson.fromJson(response.body().string(),ErrorDTO.class);
+
+        Assert.assertEquals(dto.getError(),"Bad Request");
+
+    }
 
 }
